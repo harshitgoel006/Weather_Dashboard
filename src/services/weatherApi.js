@@ -8,31 +8,39 @@ const BASE_URL = "https://api.openweathermap.org/data/2.5";
 const GEO_URL = "https://api.openweathermap.org/geo/1.0";
 
 // ---------- CURRENT WEATHER ----------
-export const getCurrentWeather = async (city) => {
+export const getCurrentWeather = async (lat, lon, unit="metric") => {
   const res = await axios.get(
-    `${BASE_URL}/weather?q=${city}&appid=${API_KEY}&units=metric`
+    `${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${unit}`
   );
 
   return res.data;
 };
 
 // ---------- 5 DAY / 3 HOUR FORECAST ----------
-export const getForecast = async (city) => {
-  const res = await axios.get(
-    `${BASE_URL}/forecast?q=${city}&appid=${API_KEY}&units=metric`
-  );
+export const getForecast = async (lat, lon, unit = "metric") => {
 
-  return res.data;
-};
+  const res = await axios.get(
+    `${BASE_URL}/forecast?lat=${lat}&lon=${lon}&units=${unit}&appid=${API_KEY}`
+  )
+
+  return res.data
+
+}
 
 // ---------- AIR QUALITY ----------
 export const getAirQuality = async (lat, lon) => {
-  const res = await axios.get(
-    `${BASE_URL}/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`
-  );
 
-  return res.data;
-};
+  const apiKey = import.meta.env.VITE_WEATHER_API_KEY
+
+  const response = await fetch(
+    `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}`
+  )
+
+  const data = await response.json()
+
+  return data.list[0]
+
+}
 
 // ---------- CITY AUTOCOMPLETE ----------
 export const getCitySuggestions = async (query) => {

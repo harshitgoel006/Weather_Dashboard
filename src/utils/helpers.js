@@ -23,3 +23,26 @@ export const formatCurrentWeather = (data) => {
     lon: data.coord.lon,
   };
 };
+
+
+export const getWeatherAlert = (weather) => {
+
+  if (!weather) return null
+
+  const condition = weather.condition.toLowerCase()
+
+  if (condition.includes("storm"))
+    return "⚡ Thunderstorm warning"
+
+  if (condition.includes("rain"))
+    return "🌧 Heavy rain expected"
+
+  if (condition.includes("snow"))
+    return "❄ Snowfall expected"
+
+  if (weather.temp > 40)
+    return "🔥 Heatwave warning"
+
+  return null
+
+}
