@@ -1,12 +1,12 @@
+import MainLayout from "./layout/MainLayout";
+import Home from "./pages/Home";
 
 function App() {
-
   return (
-    <>
-    <div className="text-3xl font-bold text-yellow-500">hello world </div>
-      
-    </>
-  )
+    <MainLayout>
+      <Home />
+    </MainLayout>
+  );
 }
 
-export default App
+export default App;
