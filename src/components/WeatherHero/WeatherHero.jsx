@@ -137,9 +137,7 @@ function WeatherHero({ weather, airQuality, isNight }) {
                   <p className={`text-lg font-black ${textPrimary}`}>{aqiLabel}</p>
                 </div>
               </div>
-              <div className="text-right">
-                <span className={`text-3xl font-black opacity-10 ${textPrimary}`}>0{aqi}</span>
-              </div>
+              
             </div>
 
             <div className="mt-4 relative h-2 bg-black/10 rounded-full overflow-hidden">
