@@ -17,7 +17,7 @@ function ChangeView({ center, zoom }) {
 function WeatherMap({ weather, isNight }) {
   const [zoom, setZoom] = useState(8);
 
-  if (!weather || !weather.lat || !weather.lon) return null;
+  if (!weather || weather.lat == null || weather.lon == null) return null;
   const center = [weather.lat, weather.lon];
 
   // Map Tile Styles
@@ -109,6 +109,7 @@ function WeatherMap({ weather, isNight }) {
           
           <TileLayer
             url={isNight ? darkTiles : lightTiles}
+            attribution='&copy; OpenStreetMap contributors'
           />
 
           {/* Cloud Layer */}
@@ -132,11 +133,15 @@ function WeatherMap({ weather, isNight }) {
           <div className="flex gap-6">
               <div className="flex flex-col">
                   <span className="text-[9px] font-black uppercase tracking-tighter opacity-40">Latitude</span>
-                  <span className="text-xs font-bold">{weather.lat.toFixed(2)}° N</span>
+                  <span className="text-xs font-bold">
+  {Math.abs(weather.lat).toFixed(2)}° {weather.lat >= 0 ? "N" : "S"}
+</span>
               </div>
               <div className="flex flex-col">
                   <span className="text-[9px] font-black uppercase tracking-tighter opacity-40">Longitude</span>
-                  <span className="text-xs font-bold">{weather.lon.toFixed(2)}° E</span>
+                  <span className="text-xs font-bold">
+  {Math.abs(weather.lon).toFixed(2)}° {weather.lon >= 0 ? "E" : "W"}
+</span>
               </div>
           </div>
           <p className="text-[10px] font-bold italic opacity-30">Real-time Satellite Feed v2.4</p>

@@ -71,13 +71,13 @@ const SunEffect = ({ isNight }) => (
 const AnimatedNumber = ({ value }) => {
   const [displayValue, setDisplayValue] = useState(0);
   useEffect(() => {
-    if (!value) return;
+    if (value === undefined || value === null) return;
     let start = 0;
     const end = parseInt(value);
     if (start === end) return;
     let timer = setInterval(() => {
       start += 1;
-      setDisplayValue(start);
+      setDisplayValue(end);
       if (start === end) clearInterval(timer);
     }, 20);
     return () => clearInterval(timer);
@@ -89,7 +89,7 @@ function WeatherHero({ weather, airQuality, isNight }) {
   if (!weather) return null;
 
   const cond = weather.condition?.toLowerCase() || "";
-  const aqi = airQuality?.list?.[0]?.main?.aqi || 1;
+  const aqi = airQuality?.main?.aqi || 1;
   const aqiLabel = ["Good", "Fair", "Moderate", "Poor", "Very Poor"][aqi - 1] || "Good";
 
   return (
@@ -139,8 +139,8 @@ function WeatherHero({ weather, airQuality, isNight }) {
         <div className="lg:col-span-5 grid grid-cols-2 gap-5">
           <StatCard icon={<Thermometer />} label="Feels Like" value={`${weather.feelsLike}°`} color="text-orange-500" isNight={isNight} />
           <StatCard icon={<Droplets />} label="Humidity" value={`${weather.humidity}%`} color="text-blue-400" isNight={isNight} />
-          <StatCard icon={<Wind />} label="Wind Pressure" value={`${weather.windSpeed} km/h`} color="text-emerald-400" isNight={isNight} />
-          <StatCard icon={<Eye />} label="Visibility" value={`${Math.round((weather.visibility || 10000) / 1000)} km`} color="text-violet-400" isNight={isNight} />
+          <StatCard icon={<Wind />} label="Wind Pressure" value={`${Math.round(weather.windSpeed * 3.6)} km/h`} color="text-emerald-400" isNight={isNight} />
+          <StatCard icon={<Eye />} label="Visibility" value={`${Math.round((weather.visibility ?? 10000) / 1000)} km`} color="text-violet-400" isNight={isNight} />
 
           {/* AQI CARD */}
           <div className={`col-span-2 p-8 rounded-[45px] flex items-center justify-between border shadow-xl ${

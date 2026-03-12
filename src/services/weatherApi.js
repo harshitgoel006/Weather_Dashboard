@@ -2,51 +2,61 @@ import axios from "axios";
 
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
 
-console.log("API KEY:", API_KEY);
-
 const BASE_URL = "https://api.openweathermap.org/data/2.5";
 const GEO_URL = "https://api.openweathermap.org/geo/1.0";
 
-// ---------- CURRENT WEATHER ----------
 export const getCurrentWeather = async (lat, lon, unit="metric") => {
-  const res = await axios.get(
-    `${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${unit}`
-  );
-
-  return res.data;
+  try {
+    const res = await axios.get(
+      `${BASE_URL}/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=${unit}`
+    );
+    return res.data;
+  } catch (error) {
+    console.error("Current Weather Error:", error);
+    throw error;
+  }
 };
 
-// ---------- 5 DAY / 3 HOUR FORECAST ----------
-export const getForecast = async (lat, lon, unit = "metric") => {
+export const getForecast = async (lat, lon, unit="metric") => {
+  try {
+    const res = await axios.get(
+      `${BASE_URL}/forecast?lat=${lat}&lon=${lon}&units=${unit}&appid=${API_KEY}`
+    );
+    return res.data.list;
+  } catch (error) {
+    console.error("Forecast Error:", error);
+    throw error;
+  }
+};
 
-  const res = await axios.get(
-    `${BASE_URL}/forecast?lat=${lat}&lon=${lon}&units=${unit}&appid=${API_KEY}`
-  )
-
-  return res.data
-
-}
-
-// ---------- AIR QUALITY ----------
 export const getAirQuality = async (lat, lon) => {
+  try {
+    const res = await axios.get(
+      `${BASE_URL}/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+    );
+    return res.data.list[0];
+  } catch (error) {
+    console.error("AQI Error:", error);
+    throw error;
+  }
+};
 
-  const apiKey = import.meta.env.VITE_WEATHER_API_KEY
-
-  const response = await fetch(
-    `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}`
-  )
-
-  const data = await response.json()
-
-  return data.list[0]
-
-}
-
-// ---------- CITY AUTOCOMPLETE ----------
 export const getCitySuggestions = async (query) => {
-  const res = await axios.get(
-    `${GEO_URL}/direct?q=${query}&limit=5&appid=${API_KEY}`
-  );
+  try {
+    const res = await axios.get(
+      `${GEO_URL}/direct?q=${query}&limit=5&appid=${API_KEY}`
+    );
 
-  return res.data;
+    return res.data.map((city) => ({
+      name: city.name,
+      state: city.state,
+      country: city.country,
+      lat: city.lat,
+      lon: city.lon
+    }));
+
+  } catch (error) {
+    console.error("City Search Error:", error);
+    throw error;
+  }
 };

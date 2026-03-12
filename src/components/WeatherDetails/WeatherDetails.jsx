@@ -11,11 +11,11 @@ function WeatherDetails({ weather, isNight }) {
 
   const details = [
     { label: "Humidity", value: weather.humidity, unit: "%", icon: <Droplets size={20} />, color: "text-blue-400" },
-    { label: "Wind Speed", value: weather.windSpeed || weather.wind, unit: "m/s", icon: <Wind size={20} />, color: "text-teal-400" },
+    { label: "Wind Speed", value: Math.round((weather.windSpeed || weather.wind) * 3.6), unit: "km/h", icon: <Wind size={20} />, color: "text-teal-400" },
     { label: "Pressure", value: weather.pressure, unit: "hPa", icon: <Gauge size={20} />, color: "text-orange-400" },
-    { label: "Visibility", value: Math.round(weather.visibility / 1000), unit: "km", icon: <Eye size={20} />, color: "text-purple-400" },
-    { label: "Sunrise", value: formatTime(weather.sunrise), unit: "AM", icon: <Sunrise size={20} />, color: "text-amber-400" },
-    { label: "Sunset", value: formatTime(weather.sunset), unit: "PM", icon: <Sunset size={20} />, color: "text-rose-400" }
+    { label: "Visibility", value: Math.round((weather.visibility ?? 1000) / 1000), unit: "km", icon: <Eye size={20} />, color: "text-purple-400" },
+    { label: "Sunrise", value: formatTime(weather.sunrise), unit: "", icon: <Sunrise size={20} />, color: "text-amber-400" },
+    { label: "Sunset", value: formatTime(weather.sunset), unit: "", icon: <Sunset size={20} />, color: "text-rose-400" }
   ];
 
   return (
@@ -39,7 +39,7 @@ function WeatherDetails({ weather, isNight }) {
       <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
         {details.map((item, index) => (
           <motion.div
-            key={index}
+            key={item.label}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.05, type: "spring", stiffness: 300, damping: 20 }}

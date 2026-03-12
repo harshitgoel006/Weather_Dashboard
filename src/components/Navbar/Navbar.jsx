@@ -45,12 +45,15 @@ function Navbar({ onSearch, currentCity, unit, setUnit, weather, isNight }) {
     recognition.start();
     setIsListening(true);
     recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setCity(transcript);
-      onSearch(transcript);
-      setIsListening(false);
-    };
-    recognition.onerror = () => setIsListening(false);
+  const transcript = event.results[0][0].transcript.trim();
+  setCity(transcript);
+  onSearch(transcript);
+  setSuggestions([]);
+  setIsFocused(false);
+  setIsListening(false);
+};
+    recognition.onerror = () => setIsListening(false);recognition.onerror = () => setIsListening(false);
+recognition.onend = () => setIsListening(false);
   };
 
   return (
@@ -113,18 +116,22 @@ function Navbar({ onSearch, currentCity, unit, setUnit, weather, isNight }) {
               onFocus={() => setIsFocused(true)}
               onBlur={() => setTimeout(() => setIsFocused(false), 200)}
               onChange={async (e) => {
-                const value = e.target.value;
-                setCity(value);
-                if (value.length > 2) {
-                  const results = await getCitySuggestions(value);
-                  setSuggestions(results);
-                } else {
-                  setSuggestions([]);
-                }
-              }}
+  const value = e.target.value;
+  setCity(value);
+
+  if (value.length > 2) {
+    const results = await getCitySuggestions(value);
+
+    if (value === e.target.value) {
+      setSuggestions(results);
+    }
+  } else {
+    setSuggestions([]);
+  }
+}}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && city.trim()) {
-                  onSearch(city);
+                  onSearch(city.trim());
                   setSuggestions([]);
                   setIsFocused(false);
                 }
@@ -212,7 +219,7 @@ function Navbar({ onSearch, currentCity, unit, setUnit, weather, isNight }) {
             whileTap={{ scale: 0.95 }}
             onClick={() => {
               if (currentCity) {
-                saveFavorite(currentCity);
+                saveFavorite(currentCity.trim());
                 setSaved(true);
                 window.dispatchEvent(new Event("favoritesUpdated"));
                 setTimeout(() => setSaved(false), 2000);

@@ -4,14 +4,14 @@ import { Activity } from "lucide-react";
 function AirQuality({ airQuality, isNight }) {
   if (!airQuality) return null;
 
-  const aqi = airQuality.main.aqi;
+ const aqi = airQuality?.main?.aqi || 1
   
   const levels = {
     1: { label: "Good", color: "text-emerald-500", dot: "bg-emerald-500", shadow: "shadow-emerald-500/20" },
     2: { label: "Fair", color: "text-amber-500", dot: "bg-amber-500", shadow: "shadow-amber-500/20" },
     3: { label: "Moderate", color: "text-orange-500", dot: "bg-orange-500", shadow: "shadow-orange-500/20" },
     4: { label: "Poor", color: "text-red-500", dot: "bg-red-500", shadow: "shadow-red-500/20" },
-    5: { label: "Critical", color: "text-purple-600", dot: "bg-purple-600", shadow: "shadow-purple-500/20" }
+    5: { label: "Very Poor", color: "text-purple-600", dot: "bg-purple-600", shadow: "shadow-purple-500/20" }
   };
 
   const current = levels[aqi] || levels[1];
@@ -68,8 +68,8 @@ function AirQuality({ airQuality, isNight }) {
       {/* --- Bottom Stats (Refined Mini Bento) --- */}
       <div className="grid grid-cols-2 gap-4 relative z-10">
         {[
-          { label: "PM 2.5", val: airQuality.components.pm2_5, unit: "mg/m³" },
-          { label: "NO₂", val: airQuality.components.no2, unit: "mg/m³" }
+          { label: "PM 2.5", val: airQuality?.components?.pm2_5 ?? 0, unit: "µg/m³" },
+          { label: "NO₂", val: airQuality?.components?.no2 ?? 0, unit: "µg/m³" }
         ].map((stat, i) => (
           <div 
             key={i} 

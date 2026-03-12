@@ -143,7 +143,10 @@ const WeatherIcon = ({ type, isCurrent, isNight }) => {
 function HourlyForecast({ forecast, isNight }) {
   if (!forecast) return null;
 
-  const next24 = forecast.slice(0, 8);
+  const now = Date.now();
+  const next24 = forecast
+  .filter(item => new Date(item.dt_txt).getTime() > now)
+  .slice(0, 8);
   const currentHour = new Date().getHours();
 
   return (
@@ -171,15 +174,16 @@ function HourlyForecast({ forecast, isNight }) {
       {/* --- SCROLLABLE TIMELINE --- */}
       <div className="flex gap-6 overflow-x-auto pb-12 pt-4 no-scrollbar scroll-smooth px-4">
         {next24.map((item, index) => {
-          const date = new Date(item.dt_txt);
+          const date = new Date(item.dt * 1000);
           const hour = date.getHours();
           const ampm = hour >= 12 ? 'PM' : 'AM';
           const displayHour = hour % 12 || 12;
-          const isCurrent = index === 0;
+          const itemTime = new Date(item.dt_txt).getTime();
+          const isCurrent = Math.abs(itemTime - Date.now()) < 3 * 60 * 60 * 1000;
 
           return (
             <motion.div
-              key={index}
+              key={index.dt}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               // Syncing hover with other components (y lift + scale)
@@ -205,7 +209,7 @@ function HourlyForecast({ forecast, isNight }) {
 
               {/* ICON */}
               <div className="relative transform group-hover:scale-110 transition-transform duration-500 ease-out">
-                <WeatherIcon type={item.weather[0].icon} isCurrent={isCurrent} isNight={isNight} />
+                <WeatherIcon type={item.weather?.[0]?.icon} isCurrent={isCurrent} isNight={isNight} />
               </div>
 
               {/* Temp & Condition */}
@@ -216,7 +220,7 @@ function HourlyForecast({ forecast, isNight }) {
                 <div className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider inline-block ${
                   isCurrent ? 'bg-white/20 text-white backdrop-blur-md' : 'bg-blue-500/10 text-blue-500'
                 }`}>
-                  {item.weather[0].main}
+                  {item.weather?.[0]?.main}
                 </div>
               </div>
 

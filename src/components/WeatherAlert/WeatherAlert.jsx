@@ -1,19 +1,16 @@
-function WeatherAlert({ weather, getWeatherAlert }) {
+import { getWeatherAlert } from "../../utils/helpers";
 
-  const alert = getWeatherAlert(weather)
+function WeatherAlert({ weather }) {
 
-  if (!alert) return null
+  const alert = getWeatherAlert(weather);
+
+  if (!alert) return null;
 
   return (
-
-    <div className="bg-red-500/20 border border-red-400 text-red-200 px-5 py-3 rounded-xl">
-
-      <strong>Weather Alert:</strong> {alert}
-
+    <div className="glass-card p-4 text-red-300 border border-red-500/30">
+      ⚠ {alert}
     </div>
-
-  )
-
+  );
 }
 
-export default WeatherAlert
+export default WeatherAlert;

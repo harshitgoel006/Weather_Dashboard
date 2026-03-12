@@ -10,10 +10,14 @@ function SunProgress({ weather, isNight }) {
   
   const sunrise = weather.sunrise;
   const sunset = weather.sunset;
-  const now = Math.floor(Date.now() / 1000);
+  const now = Math.floor(Date.now() / 1000) + (weather.timezone || 0);
   
   // Logic: 0 at sunrise, 100 at sunset.
-  const progress = Math.max(0, Math.min(100, ((now - sunrise) / (sunset - sunrise)) * 100));
+  const daylightDuration = sunset - sunrise;
+
+const progress = daylightDuration > 0
+  ? Math.max(0, Math.min(100, ((now - sunrise) / daylightDuration) * 100))
+  : 0;
 
   // SVG Path constants
   const arcPath = "M 20 100 Q 150 -20 280 100";
@@ -38,7 +42,7 @@ function SunProgress({ weather, isNight }) {
           <p className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 opacity-40`}>
             Sun Path
           </p>
-          <p className="text-xl font-black">{now > sunset ? "Sunset" : "Daylight"}</p>
+          <p className="text-xl font-black">{now > sunset ? "Night" : "Daylight"}</p>
         </div>
         <div className={`p-3 rounded-2xl ${isNight ? 'bg-white/5' : 'bg-slate-50'}`}>
             {isNight ? <Moon size={20} className="text-indigo-400" /> : <Sun size={20} className="text-amber-500" />}
@@ -85,7 +89,9 @@ function SunProgress({ weather, isNight }) {
           initial={{ left: "0%", bottom: "0px" }}
           animate={{ 
             left: `${progress}%`,
-            bottom: `${Math.sin((progress / 100) * Math.PI) * 95}px` 
+            bottom: progress > 0 && progress < 100
+  ? `${Math.sin((progress / 100) * Math.PI) * 95}px`
+  : "0px"
           }}
           transition={{ duration: 2.5, ease: "circOut" }}
           style={{ transform: 'translateX(-50%) translateY(50%)' }}

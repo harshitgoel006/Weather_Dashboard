@@ -38,13 +38,19 @@ ChartJS.register(
 );
 
 function WeatherChart({ forecast, isNight }) {
-  if (!forecast) return null;
 
-  const next24 = forecast.slice(0, 8);
-  const labels = next24.map(item =>
-    new Date(item.dt_txt).getHours() + ":00"
-  );
-  const temps = next24.map(item => Math.round(item.main.temp));
+  if (!forecast || forecast.length === 0) return null;
+
+  const now = Date.now();
+  const next24 = forecast
+  .filter(item => new Date(item.dt_txt).getTime() > now)
+  .slice(0, 8);
+
+  const labels = next24.map(item => {
+    const hour = new Date(item.dt_txt).getHours();
+    return `${hour}:00`;
+  });
+  const temps = next24.map(item => Math.round(item.main?.temp ?? 0));
 
   const data = {
     labels,

@@ -78,7 +78,32 @@ const RoyalIcon = ({ iconCode, isToday }) => {
 function WeeklyForecast({ forecast, isNight }) {
   if (!forecast) return null;
 
-  const daily = forecast.filter((item) => item.dt_txt.includes("12:00:00"));
+  const daily = Object.values(
+    forecast.reduce((acc, item) => {
+      const date = item.dt_txt.split(" ")[0];
+      
+      if (!acc[date]) {
+        acc[date] = 
+        {
+          date,
+          temps: [],
+          icon: item.weather?.[0]?.icon,
+          condition: item.weather?.[0]?.main
+        };
+      }
+      
+      acc[date].temps.push(item.main.temp);
+      return acc;
+    }, 
+    {}
+  )).map((day) => ({
+    date: day.date,
+    high: Math.max(...day.temps),
+    low: Math.min(...day.temps),
+    icon: day.icon,
+    condition: day.condition
+  }));
+
 
   return (
     <div className="w-full">
@@ -105,15 +130,15 @@ function WeeklyForecast({ forecast, isNight }) {
       {/* --- FORECAST LIST --- */}
       <div className="space-y-4 px-2">
         {daily.slice(0, 7).map((day, index) => {
-          const date = new Date(day.dt_txt);
+          const date = new Date(day.date);
           const dayName = date.toLocaleDateString("en-US", { weekday: "long" });
           const isToday = index === 0;
-          const highTemp = Math.round(day.main.temp);
-          const lowTemp = Math.round(day.main.temp - 5);
+          const highTemp = Math.round(day.high);
+          const lowTemp = Math.round(day.low);
 
           return (
             <motion.div
-              key={index}
+              key={day.date}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
@@ -133,13 +158,13 @@ function WeeklyForecast({ forecast, isNight }) {
                   {isToday ? "Today" : dayName}
                 </p>
                 <p className={`text-[10px] font-black uppercase tracking-widest opacity-40`}>
-                  {day.weather[0].main}
+                  {day.condition}
                 </p>
               </div>
 
               {/* Icon Container */}
               <div className="flex-1 flex justify-center transform group-hover:scale-110 transition-transform duration-500">
-                <RoyalIcon iconCode={day.weather[0].icon} isToday={isToday} />
+                <RoyalIcon iconCode={day.icon} isToday={isToday} />
               </div>
 
               {/* Temp Range & Progress Bar */}

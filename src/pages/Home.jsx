@@ -1,4 +1,6 @@
-import React from 'react';
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
 import WeatherHero from "../components/WeatherHero/WeatherHero";
 import HourlyForecast from "../components/HourlyForecast/HourlyForecast";
 import WeeklyForecast from "../components/WeeklyForecast/WeeklyForecast";
@@ -7,57 +9,83 @@ import WeatherChart from "../components/WeatherChart/WeatherChart";
 import WeatherMap from "../components/WeatherMap/WeatherMap";
 import SunProgress from "../components/SunProgress/SunProgress";
 import AirQuality from "../components/AQICard/AQICard";
+import FavoriteCities from "../components/FavoriteCities/FavoriteCities";
+import WeatherAlert from "../components/WeatherAlert/WeatherAlert";
 
-function Home({ weather, forecast, airQuality }) {
-  if (!weather) return <div className="h-screen flex items-center justify-center animate-pulse">Loading SkyCast...</div>;
+function Home({ weather, forecast, airQuality, onSearch, isNight }) {
+
+  if (!weather)
+    return (
+      <div className="h-screen flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"/>
+        <p className="mt-4 text-xs tracking-widest text-slate-400 uppercase">
+          Syncing SkyCast...
+        </p>
+      </div>
+    );
 
   return (
-    <div className="max-w-[1400px] mx-auto px-6 py-10 space-y-8">
-      
-      {/* SECTION 1: MAIN DISPLAY & SIDEBAR */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Hero Section (7 Columns) */}
-        <div className="lg:col-span-8">
-          <WeatherHero weather={weather} />
-        </div>
+    <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-10 space-y-10">
 
-        {/* Vital Stats Sidebar (4 Columns) */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          <AirQuality airQuality={airQuality} />
-          <SunProgress weather={weather} />
-        </div>
+      {/* FAVORITES */}
+      <FavoriteCities onSelect={onSearch} />
+
+      {/* HERO */}
+      <WeatherHero
+        weather={weather}
+        airQuality={airQuality}
+        isNight={isNight}
+      />
+
+      {/* QUICK STATS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {airQuality && (<AirQuality airQuality={airQuality} isNight={isNight}/>)}
+        <SunProgress weather={weather} isNight={isNight}/>
       </div>
 
-      {/* SECTION 2: TRENDS & CHARTS */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bento-tile">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6">Temperature Trend</h3>
-          <WeatherChart forecast={forecast} />
-        </div>
-        <div className="bento-tile overflow-hidden">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-6">Interactive Map</h3>
-          <WeatherMap weather={weather} />
-        </div>
-      </div>
+      {/* WEATHER DETAILS */}
+      <WeatherDetails
+        weather={weather}
+        isNight={isNight}
+      />
 
-      {/* SECTION 3: FORECASTS */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Hourly (Scrollable) */}
-        <div className="lg:col-span-8 bento-tile">
-          <HourlyForecast forecast={forecast} />
-        </div>
-        
-        {/* Weekly (Vertical List) */}
-        <div className="lg:col-span-4 bento-tile">
-          <WeeklyForecast forecast={forecast} />
-        </div>
-      </div>
+      {/* HOURLY FORECAST */}
+      <HourlyForecast
+        forecast={forecast || []}
+        isNight={isNight}
+      />
 
-      {/* SECTION 4: SMALL DETAILS GRID */}
-      <div className="w-full">
-        <WeatherDetails weather={weather} />
-      </div>
+      {/* WEEKLY FORECAST */}
+      <WeeklyForecast
+        forecast={forecast || []}
+        isNight={isNight}
+      />
+
+      {/* CHART */}
+      <WeatherChart
+        forecast={forecast || []}
+        isNight={isNight}
+      />
+
+      {/* MAP */}
+      <WeatherMap
+        weather={weather}
+        isNight={isNight}
+      />
+
+      {/* ALERT */}
+      <AnimatePresence>
+        {weather && (
+          <motion.div
+            initial={{opacity:0,y:50}}
+            animate={{opacity:1,y:0}}
+            exit={{opacity:0}}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-xl z-[1000]"
+          >
+            {weather?.condition && (<WeatherAlert weather={weather}/>)}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );
