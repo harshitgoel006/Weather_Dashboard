@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../components/Navbar/Navbar";
@@ -12,349 +11,246 @@ import {
 
 import { formatCurrentWeather } from "../utils/helpers";
 
-
-
-
 const WeatherScene = ({ condition, isNight }) => {
   const cond = (condition || "").toLowerCase();
 
-  // Logic Flags
   const isRain = cond.includes("rain") || cond.includes("drizzle");
   const isStorm = cond.includes("thunder");
   const isCloudy = cond.includes("cloud") || cond.includes("mist") || cond.includes("haze");
   const isSnow = cond.includes("snow");
   const isClear = cond.includes("clear");
 
+  const shouldShowStars = isNight && isClear && !isCloudy;
   const shouldShowClouds = isCloudy || (!isNight && isClear);
-
-  const shouldShowStars = isNight && isClear;
 
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       
-      {/* ☀ SUN GLOW (DAY CLEAR ONLY) */}
+      {/* ☀ ENHANCED DAYLIGHT OVERLAY */}
       {!isNight && isClear && (
-        <motion.div
-          animate={{ y: [0, 30, 0], opacity: [0.4, 0.6, 0.4] }}
-          transition={{ duration: 20, repeat: Infinity }}
-          className="absolute top-10 right-[15%] w-[120px] h-[120px] rounded-full 
-          bg-yellow-300/40 blur-[80px]"
-        />
-      )}
-
-      {/* 🌙 MOON GLOW (NIGHT ONLY) */}
-      {isNight && (
-        <div className="absolute top-16 right-[18%] w-[90px] h-[50px] 
-        rounded-full bg-blue-200/30 blur-[60px]" />
-      )}
-
-      {/* ⭐ STAR FIELD (ONLY NIGHT + CLEAR) */}
-      {shouldShowStars && (
         <>
-          {[...Array(140)].map((_, i) => (
+          <motion.div
+            animate={{ 
+              scale: [1, 1.15, 1],
+              opacity: [0.4, 0.6, 0.4] 
+            }}
+            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-40 -right-40 w-[800px] h-[800px] rounded-full 
+            bg-gradient-to-br from-yellow-200/20 via-orange-300/10 to-transparent blur-[140px]"
+          />
+        </>
+      )}
+
+      {/* ⭐ CRYSTAL CLEAR NIGHT STARS */}
+      {shouldShowStars && (
+        <div className="absolute inset-0">
+          {[...Array(150)].map((_, i) => (
             <motion.div
               key={`star-${i}`}
-              initial={{ opacity: Math.random() }}
-              animate={{ opacity: [0.2, 1, 0.2] }}
-              transition={{
-                duration: 2 + Math.random() * 3,
-                repeat: Infinity,
-              }}
-              className="absolute bg-white rounded-full shadow-[0_0_6px_rgba(255,255,255,0.9)]"
+              animate={{ opacity: [0.2, 0.8, 0.2] }}
+              transition={{ duration: 3 + Math.random() * 2, repeat: Infinity }}
+              className="absolute bg-white rounded-full shadow-[0_0_3px_white]"
               style={{
                 top: `${Math.random() * 100}%`,
                 left: `${Math.random() * 100}%`,
-                width: `${Math.random() * 2 + 1}px`,
-                height: `${Math.random() * 2 + 1}px`,
+                width: `${Math.random() * 1.2 + 0.5}px`,
+                height: `${Math.random() * 1.2 + 0.5}px`,
               }}
             />
           ))}
-        </>
+        </div>
       )}
 
-      {/* ☁ CLOUD LAYERS (CLOUDY OR DAY-CLEAR) */}
+      {/* ☁ CLOUDY LAYERS */}
       {shouldShowClouds && (
-        <div className="absolute inset-0">
-          {[...Array(isCloudy ? 6 : 3)].map((_, i) => (
+        <div className="absolute inset-0 overflow-hidden">
+          {[...Array(isCloudy ? 8 : 4)].map((_, i) => (
             <motion.div
               key={`cloud-${i}`}
-              initial={{ x: "-30%" }}
-              animate={{ x: ["-30%", "120%"] }}
-              transition={{
-                duration: 120 + i * 30,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-              className={`absolute rounded-full blur-[60px] ${
-                isNight ? "bg-gray-800/40" : "bg-white/40"
-              }`}
+              initial={{ x: "-50%" }}
+              animate={{ x: ["-50%", "150%"] }}
+              transition={{ duration: 100 + i * 20, repeat: Infinity, ease: "linear" }}
+              className={`absolute rounded-full blur-[100px] ${isNight ? "bg-slate-800/30" : "bg-white/40"}`}
               style={{
-                top: `${10 + i * 15}%`,
-                width: `${400 + Math.random() * 300}px`,
-                height: `${150 + Math.random() * 100}px`,
+                top: `${(i * 15) % 85}%`,
+                width: `${500 + Math.random() * 400}px`,
+                height: `${200 + Math.random() * 150}px`,
+                opacity: isCloudy ? 0.6 : 0.2,
               }}
             />
           ))}
         </div>
       )}
 
-      {/* ❄ SNOW PARTICLES */}
-      {isSnow && (
-        <>
-          {[...Array(100)].map((_, i) => (
-            <motion.div
-              key={`snow-${i}`}
-              animate={{ 
-                y: ["-10vh", "110vh"],
-                x: ["0vw", `${Math.random() * 10 - 5}vw`] 
-              }}
-              transition={{
-                duration: 5 + Math.random() * 5,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-              className="absolute bg-white rounded-full blur-[1px]"
-              style={{
-                left: `${Math.random() * 100}%`,
-                width: `${Math.random() * 4 + 2}px`,
-                height: `${Math.random() * 4 + 2}px`,
-                opacity: Math.random(),
-              }}
-            />
-          ))}
-        </>
-      )}
-
-      {/* 🌧 RAIN */}
+      {/* 🌧 HYPER-REALISTIC RAIN DROPS */}
       {(isRain || isStorm) && (
-        <div className="absolute inset-0">
-          {[...Array(120)].map((_, i) => (
-            <div
-              key={`rain-${i}`}
-              className="absolute"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: "-10%",
-                animation: `rain ${0.6 + Math.random() * 0.3}s linear infinite`,
-                width: "1.5px",
-                height: "60px",
-                background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.6))",
-              }}
-            />
-          ))}
+        <div className="absolute inset-0 overflow-hidden z-[1]">
+          <div className={`absolute inset-0 ${isNight ? "bg-blue-950/20" : "bg-slate-900/10"} backdrop-blur-[1px]`} />
+          {[...Array(160)].map((_, i) => {
+            const duration = 0.4 + Math.random() * 0.3;
+            const delay = Math.random() * 2;
+            return (
+              <React.Fragment key={`rain-${i}`}>
+                <div
+                  className="absolute bg-gradient-to-b from-transparent via-white/30 to-white/10"
+                  style={{
+                    left: `${Math.random() * 120 - 10}%`,
+                    top: "-10%",
+                    width: i % 8 === 0 ? "1.5px" : "1px",
+                    height: i % 8 === 0 ? "110px" : "70px",
+                    transform: "rotate(15deg)",
+                    animation: `rain ${duration}s linear infinite`,
+                    animationDelay: `${delay}s`,
+                    opacity: isNight ? 0.3 : 0.5,
+                  }}
+                />
+                {i % 20 === 0 && (
+                  <motion.div
+                    animate={{ scale: [0, 1.5, 0], opacity: [0, 0.4, 0] }}
+                    transition={{ duration: 0.5, repeat: Infinity, delay: delay + duration - 0.1 }}
+                    className="absolute bottom-4 w-6 h-1 bg-white/20 rounded-full blur-md"
+                    style={{ left: `${Math.random() * 100}%` }}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
         </div>
       )}
 
-      {/* ⚡ STORM LIGHTNING */}
+      {/* ⚡ THUNDER STRIKE */}
       {isStorm && (
         <motion.div
-          animate={{ opacity: [0, 0, 0, 0.6, 0, 0.4, 0] }}
-          transition={{
-            duration: 5,
-            repeat: Infinity,
-            times: [0, 0.7, 0.72, 0.73, 0.75, 0.77, 1]
-          }}
-          className="absolute inset-0 bg-blue-100"
+          animate={{ opacity: [0, 0, 0.3, 0, 0.7, 0.1, 0, 0] }}
+          transition={{ duration: 5, repeat: Infinity, times: [0, 0.7, 0.71, 0.72, 0.74, 0.76, 0.8, 1] }}
+          className="absolute inset-0 bg-blue-100/30 z-[2] backdrop-brightness-150"
         />
       )}
     </div>
   );
 };
 
-
-
-// 🌈 WEATHER BACKGROUND THEMES
+// 🌈 IMPROVED PREMIUM BACKGROUND GRADIENTS
 const weatherThemes = {
-
-  Clear:{
-    day:"from-sky-400 via-sky-500 to-blue-600",
-    night:"from-[#020617] via-[#0b1220] to-black"
+  Clear: {
+    day: "from-[#38bdf8] via-[#3b82f6] to-[#6366f1]", // Vibrant Sky
+    night: "from-[#020617] via-[#0f172a] to-[#000000]" // Deep Midnight
   },
-
-  Clouds:{
-    day:"from-gray-300 via-gray-400 to-gray-500",
-    night:"from-[#111827] via-[#1f2937] to-black"
+  Clouds: {
+    day: "from-[#94a3b8] via-[#64748b] to-[#475569]", // Steel Grey
+    night: "from-[#0f172a] via-[#1e293b] to-[#020617]" // Overcast Dark
   },
-
-  Rain:{
-    day:"from-slate-500 via-slate-700 to-slate-900",
-    night:"from-[#020617] via-[#0f172a] to-black"
+  Rain: {
+    day: "from-[#1e293b] via-[#334155] to-[#0f172a]", // Moody Rainy Day
+    night: "from-[#020617] via-[#171717] to-[#1e1b4b]" // Deep Indigo Storm
   },
-
-  Default:{
-    day:"from-sky-400 via-blue-500 to-blue-600",
-    night:"from-[#020617] via-[#0b1220] to-black"
+  Default: {
+    day: "from-[#0ea5e9] to-[#2563eb]",
+    night: "from-[#020617] to-[#000000]"
   }
-
-}
-
+};
 
 function MainLayout({ children }) {
+  const [weather, setWeather] = useState(null);
+  const [unit, setUnit] = useState("metric");
+  const [loading, setLoading] = useState(true);
+  const [currentCity, setCurrentCity] = useState(null);
 
-  const [weather,setWeather] = useState(null)
-  const [unit,setUnit] = useState("metric")
-  const [loading,setLoading] = useState(true)
-  const [currentCity,setCurrentCity] = useState(null)
-
-
-  // FETCH WEATHER BY COORDS
-  const fetchWeatherByCoords = async (lat,lon)=>{
-    try{
-
-      setLoading(true)
-
-      const [w,f,a] = await Promise.all([
-        getCurrentWeather(lat,lon,unit),
-        getForecast(lat,lon,unit),
-        getAirQuality(lat,lon)
-      ])
-
-      setWeather({
-        ...formatCurrentWeather(w),
-        forecast:f,
-        airQuality:a,
-        lat,
-        lon
-      })
-
-    }catch(err){
-      console.log(err)
+  const fetchWeatherByCoords = async (lat, lon) => {
+    try {
+      setLoading(true);
+      const [w, f, a] = await Promise.all([
+        getCurrentWeather(lat, lon, unit),
+        getForecast(lat, lon, unit),
+        getAirQuality(lat, lon)
+      ]);
+      setWeather({ ...formatCurrentWeather(w), forecast: f, airQuality: a, lat, lon });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
-    finally{
-      setLoading(false)
+  };
+
+  const fetchWeather = async (city) => {
+    setCurrentCity(city);
+    const geo = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${import.meta.env.VITE_WEATHER_API_KEY}`);
+    const data = await geo.json();
+    if (data.length) fetchWeatherByCoords(data[0].lat, data[0].lon);
+  };
+
+  useEffect(() => {
+    if (currentCity && weather) {
+      fetchWeatherByCoords(weather.lat, weather.lon);
+      return;
     }
-  }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude),
+      () => fetchWeather("Delhi")
+    );
+  }, [unit]);
 
-
-  // FETCH WEATHER BY CITY
-  const fetchWeather = async (city)=>{
-    setCurrentCity(city)
-    const geo = await fetch(
-      `https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${import.meta.env.VITE_WEATHER_API_KEY}`
-    )
-
-    const data = await geo.json()
-
-    if(data.length){
-      fetchWeatherByCoords(data[0].lat,data[0].lon)
-    }
-
-  }
-
-
-  // AUTO LOCATION
-  useEffect(()=>{
-
-  if(currentCity){
-  fetchWeatherByCoords(weather.lat, weather.lon)
-  return
-}
-
-  navigator.geolocation.getCurrentPosition(
-
-    (pos)=>{
-      fetchWeatherByCoords(
-        pos.coords.latitude,
-        pos.coords.longitude
-      )
-    },
-
-    ()=>{
-      fetchWeather("Delhi")
-    }
-
-  )
-
-},[unit])
-
-
-  // DAY / NIGHT
   const isNight = useMemo(() => {
+    if (!weather) return false;
+    const now = Date.now() / 1000;
+    return now < weather.sunrise || now > weather.sunset;
+  }, [weather]);
 
-if (!weather) return false;
-
-const now = Date.now() / 1000;
-
-return now < weather.sunrise || now > weather.sunset;
-
-}, [weather]);
-
-
-  const theme = weatherThemes[weather?.condition] || weatherThemes.Default
-
+  const theme = weatherThemes[weather?.condition] || weatherThemes.Default;
 
   return (
-
-
-    <div className={`relative min-h-screen bg-gradient-to-br ${isNight ? theme.night : theme.day} transition-all duration-[2000ms]`}>
-
+    <div className={`relative min-h-screen overflow-x-hidden bg-gradient-to-br ${isNight ? theme.night : theme.day} transition-all duration-[2000ms]`}>
       <WeatherScene condition={weather?.condition} isNight={isNight}/>
 
-      {/* CONTENT */}
       <div className="relative z-10 flex flex-col min-h-screen">
-
-        <header className="sticky top-0 backdrop-blur-xl bg-black/20 border-b border-white/10 z-50">
-          <Navbar
-  onSearch={fetchWeather}
-  currentCity={currentCity || weather?.city}
-  unit={unit}
-  setUnit={setUnit}
-  weather={weather}
-  isNight={isNight}
-/>
+        <header className="sticky top-0 w-full backdrop-blur-2xl bg-black/10 border-b border-white/5 z-50">
+          <Navbar 
+            onSearch={fetchWeather} 
+            currentCity={currentCity || weather?.city} 
+            unit={unit} 
+            setUnit={setUnit} 
+            weather={weather} 
+            isNight={isNight} 
+          />
         </header>
 
-        <main className="flex-1 max-w-7xl mx-auto px-6 py-10">
-
+        <main className="flex-1 w-full max-w-[1440px] mx-auto px-6 py-8">
           <AnimatePresence mode="wait">
-
             {!loading ? (
-
               <motion.div
                 key={weather?.city}
-                initial={{opacity:0,y:20}}
-                animate={{opacity:1,y:0}}
-                exit={{opacity:0}}
-                transition={{duration:0.6}}
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.6 }}
+                className="w-full"
               >
-                {React.cloneElement(children,{
-                  weather,
-                  forecast:weather?.forecast,
-                  airQuality:weather?.airQuality,
-                  isNight,
-                  onSearch:fetchWeather
-                })}
+                {React.cloneElement(children, { weather, forecast: weather?.forecast, airQuality: weather?.airQuality, isNight, onSearch: fetchWeather })}
               </motion.div>
-
             ) : (
-
-              <div className="h-[60vh] flex items-center justify-center">
-                <div className="w-10 h-10 border-2 border-white border-t-transparent rounded-full animate-spin"/>
+              <div className="h-[70vh] flex flex-col items-center justify-center gap-6">
+                <div className="w-14 h-14 border-[3px] border-white/10 border-t-white rounded-full animate-spin shadow-2xl"/>
+                <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.5em]">Syncing Atmosphere...</p>
               </div>
-
             )}
-
           </AnimatePresence>
-
         </main>
-
-        <Footer/>
-
+        <Footer isNight={isNight}/>
       </div>
 
-
-      {/* RAIN ANIMATION */}
       <style>{`
         @keyframes rain {
-          0% { transform:translateY(-10vh) rotate(20deg); opacity:0 }
-          10%{opacity:1}
-          100%{ transform:translateY(110vh) rotate(20deg); opacity:0 }
+          0% { transform: translateY(-20vh) translateX(0) rotate(15deg); opacity: 0; }
+          15% { opacity: 1; }
+          85% { opacity: 1; }
+          100% { transform: translateY(110vh) translateX(-40px) rotate(15deg); opacity: 0; }
         }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 20px; }
       `}</style>
-
     </div>
-
-  )
+  );
 }
 
-export default MainLayout
+export default MainLayout;

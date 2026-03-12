@@ -1,6 +1,6 @@
 export const formatCurrentWeather = (data) => {
   return {
-    city: data.name,
+    city: `${data.name}, ${data.sys.country}`,
     country: data.sys.country,
 
     temperature: Math.round(data.main.temp),

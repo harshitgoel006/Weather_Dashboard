@@ -1,85 +1,34 @@
-
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Wind, Droplets, Eye, Thermometer, ArrowUp, ArrowDown, Waves } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  Wind,
+  Droplets,
+  Eye,
+  Thermometer,
+  ArrowUp,
+  ArrowDown,
+  Waves
+} from "lucide-react";
 
-// --- Realistic Rain Animation Component (Original) ---
-const RainEffect = () => (
-  <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-    {[...Array(30)].map((_, i) => (
-      <motion.div
-        key={i}
-        initial={{ y: -100, x: `${Math.random() * 100}%`, opacity: 0 }}
-        animate={{ y: 800, opacity: [0, 0.4, 0] }}
-        transition={{
-          duration: 0.6 + Math.random() * 0.4,
-          repeat: Infinity,
-          delay: Math.random() * 2,
-          ease: "linear"
-        }}
-        className="absolute w-[1.5px] h-[40px] bg-blue-200/40 blur-[0.5px]"
-      />
-    ))}
-  </div>
-);
-
-// --- MODIFIED Clouds Effect (Matches your Screenshot's moody/blurry vibe) ---
-const CloudsEffect = () => (
-  <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-    {/* Dark Gradient Overlay at Top (Matches image's top dark sky) */}
-    <div className="absolute top-0 left-0 w-full h-[45%] bg-gradient-to-b from-slate-900/40 to-transparent blur-[60px]" />
-
-    {/* Large Hazy Distant Cloud (Slow moving) */}
-    <motion.div
-      animate={{ x: [-100, 100], opacity: [0.1, 0.25, 0.1] }}
-      transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-      className="absolute top-10 -right-20 w-[600px] h-40 bg-white/20 blur-[120px] rounded-full"
-    />
-
-    {/* Near Moving Hazy Cloud (Very Blurry like the image) */}
-    <motion.div
-      animate={{ x: [400, -400] }}
-      transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
-      className="absolute bottom-40 -left-10 w-[700px] h-80 bg-slate-200/10 blur-[130px] rounded-full"
-    />
-
-    {/* Center Mist Cluster */}
-    <motion.div
-      animate={{ opacity: [0.05, 0.15, 0.05], scale: [1, 1.1, 1] }}
-      transition={{ duration: 15, repeat: Infinity }}
-      className="absolute inset-0 m-auto w-[500px] h-[300px] bg-slate-400/10 blur-[150px] rounded-full"
-    />
-  </div>
-);
-
-// --- Realistic Sun Flare Component (Original) ---
-const SunEffect = ({ isNight }) => (
-  <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-    <motion.div
-      animate={{ 
-        scale: [1, 1.1, 1],
-        opacity: isNight ? [0.1, 0.15, 0.1] : [0.3, 0.5, 0.3] 
-      }}
-      transition={{ duration: 8, repeat: Infinity }}
-      className={`absolute -right-20 -top-20 w-[450px] h-[450px] blur-[120px] rounded-full ${
-        isNight ? "bg-indigo-500/30" : "bg-orange-400/40 shadow-[0_0_100px_rgba(251,146,60,0.4)]"
-      }`}
-    />
-  </div>
-);
+import { WeatherIcon } from "../HourlyForecast/HourlyForecast";
 
 const AnimatedNumber = ({ value }) => {
   const [displayValue, setDisplayValue] = useState(0);
   useEffect(() => {
-    if (value === undefined || value === null) return;
+    if (!value) return;
     let start = 0;
     const end = parseInt(value);
-    if (start === end) return;
-    let timer = setInterval(() => {
-      start += 1;
-      setDisplayValue(end);
-      if (start === end) clearInterval(timer);
-    }, 20);
+    const duration = 1000;
+    const increment = end / (duration / 16);
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= end) {
+        setDisplayValue(end);
+        clearInterval(timer);
+      } else {
+        setDisplayValue(Math.floor(start));
+      }
+    }, 16);
     return () => clearInterval(timer);
   }, [value]);
   return <span>{displayValue}</span>;
@@ -88,121 +37,160 @@ const AnimatedNumber = ({ value }) => {
 function WeatherHero({ weather, airQuality, isNight }) {
   if (!weather) return null;
 
-  const cond = weather.condition?.toLowerCase() || "";
   const aqi = airQuality?.main?.aqi || 1;
-  const aqiLabel = ["Good", "Fair", "Moderate", "Poor", "Very Poor"][aqi - 1] || "Good";
+  const aqiLabel = ["Good", "Fair", "Moderate", "Poor", "Very Poor"][aqi - 1];
+  
+  const textPrimary = isNight ? "text-white" : "text-slate-900";
+  const textSecondary = isNight ? "text-white/60" : "text-slate-500";
+  const taglineColor = isNight ? "text-white/90" : "text-slate-800";
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full mb-10 select-none">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        
-        {/* --- MAIN HERO CARD --- */}
-        <div className={`lg:col-span-7 rounded-[60px] p-12 flex flex-col justify-between overflow-hidden relative border transition-all duration-1000 min-h-[550px] shadow-2xl ${
-            isNight ? "bg-slate-950/80 border-white/5 text-white" : "bg-gradient-to-br from-white/60 to-white/30 backdrop-blur-3xl border-white/40 text-slate-900"
-          }`}
-        >
-          {/* ATMOSPHERIC BACKGROUND LAYERS */}
-          {cond.includes("rain") && <RainEffect />}
-          {cond.includes("cloud") && <CloudsEffect />}
-          {!cond.includes("rain") && <SunEffect isNight={isNight} />}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full mb-6 select-none px-1" // Margin kam kiya (mb-10 -> mb-6)
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch"> {/* Gap kam kiya (gap-6 -> gap-4) */}
 
+        {/* --- MAIN HERO CARD --- */}
+        <motion.div
+          whileHover={{ scale: 1.002 }}
+          className={`lg:col-span-7 rounded-[35px] p-6 md:p-8 flex flex-col justify-between relative border backdrop-blur-3xl shadow-xl overflow-hidden min-h-[420px] transition-all duration-500 group
+          ${isNight 
+              ? "bg-white/[0.03] border-white/10 hover:border-white/30 shadow-black/40" 
+              : "bg-white/30 border-white/40 hover:border-blue-400/30 shadow-blue-900/5"
+            }`}
+        >
+          {/* Interactive Background Glow */}
+          <div className={`absolute -top-24 -right-24 w-80 h-80 rounded-full blur-[100px] opacity-20 transition-colors duration-1000 
+            ${isNight ? 'bg-blue-600' : 'bg-yellow-400'}`} 
+          />
+
+          {/* WEATHER ICON - Adjusted Scale for compactness */}
+          <motion.div 
+            animate={{ y: [0, -8, 0], rotate: [0, 3, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute right-8 top-8 scale-[1] md:scale-[1.2] z-0 pointer-events-none filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.15)]"
+          >
+            <WeatherIcon type={weather.icon} isCurrent={true} isNight={isNight} />
+          </motion.div>
+
+          {/* HEADER */}
           <div className="relative z-10">
-            <p className="text-[12px] font-black tracking-[0.5em] opacity-40 uppercase mb-3">Atmospheric Report</p>
-            <h1 className="text-7xl font-black tracking-tighter drop-shadow-sm">{weather.city}</h1>
-            <div className="flex items-center gap-3 mt-2 opacity-50 font-medium">
-                <div className="w-10 h-[1.5px] bg-current" />
-                <p>{new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}</p>
-            </div>
+            <motion.p 
+              className={`text-[9px] md:text-[10px] uppercase font-black mb-2 tracking-[0.4em] drop-shadow-sm ${taglineColor}`}
+            >
+              SkyCast Premium Report
+            </motion.p>
+            <h1 className={`text-4xl md:text-5xl font-black tracking-tighter leading-none drop-shadow-md ${textPrimary}`}>
+              {weather.city}
+              <span className="text-blue-500 ml-1">.</span>
+            </h1>
+            <p className={`mt-2 text-xs font-bold flex items-center gap-2 ${textSecondary}`}>
+              {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+            </p>
           </div>
 
-          <div className="relative z-10 mt-8">
-            <div className="flex items-start">
-              <span className="text-[12rem] font-black italic leading-[0.85] tracking-tighter transition-all hover:scale-105 duration-500">
+          {/* CENTER TEMP - Font sizes reduced */}
+          <div className="relative z-10 my-6">
+            <div className={`flex items-start ${textPrimary}`}>
+              <span className="text-[6.5rem] md:text-[8rem] font-black leading-none tracking-tighter drop-shadow-lg">
                 <AnimatedNumber value={weather.temperature} />
               </span>
-              <span className="text-7xl font-light text-orange-500 mt-4 opacity-80">°</span>
+              <span className="text-5xl md:text-6xl font-light opacity-30 mt-4 md:mt-6">°</span>
             </div>
-
-            <div className="flex items-center gap-6 mt-6">
-              <div className={`h-14 w-[5px] rounded-full shadow-lg ${isNight ? 'bg-indigo-500' : 'bg-orange-500'}`} />
-              <p className="text-4xl md:text-5xl capitalize font-bold tracking-tight opacity-90">{weather.description}</p>
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-8 bg-blue-500 rounded-full" />
+              <p className={`text-2xl md:text-3xl capitalize font-extrabold tracking-tight ${textPrimary}`}>
+                {weather.description}
+              </p>
             </div>
           </div>
 
-          <div className="flex gap-4 relative z-10 mt-12">
-            <Badge icon={<ArrowUp size={18} className="text-orange-500" />} label="High" value={`${weather.tempMax || weather.temperature + 2}°`} isNight={isNight} />
-            <Badge icon={<ArrowDown size={18} className="text-blue-500" />} label="Low" value={`${weather.tempMin || weather.temperature - 3}°`} isNight={isNight} />
+          {/* FOOTER BADGES */}
+          <div className="flex flex-wrap gap-3 relative z-10">
+            <Badge icon={<ArrowUp size={12} />} label="High" value={`${weather.tempMax || weather.temperature + 2}°`} color="text-orange-500" isNight={isNight} />
+            <Badge icon={<ArrowDown size={12} />} label="Low" value={`${weather.tempMin || weather.temperature - 3}°`} color="text-blue-400" isNight={isNight} />
           </div>
-        </div>
+        </motion.div>
 
-        {/* --- STATS BENTO GRID --- */}
-        <div className="lg:col-span-5 grid grid-cols-2 gap-5">
-          <StatCard icon={<Thermometer />} label="Feels Like" value={`${weather.feelsLike}°`} color="text-orange-500" isNight={isNight} />
-          <StatCard icon={<Droplets />} label="Humidity" value={`${weather.humidity}%`} color="text-blue-400" isNight={isNight} />
-          <StatCard icon={<Wind />} label="Wind Pressure" value={`${Math.round(weather.windSpeed * 3.6)} km/h`} color="text-emerald-400" isNight={isNight} />
-          <StatCard icon={<Eye />} label="Visibility" value={`${Math.round((weather.visibility ?? 10000) / 1000)} km`} color="text-violet-400" isNight={isNight} />
+        {/* --- STATS GRID --- */}
+        <div className="lg:col-span-5 grid grid-cols-2 gap-3 md:gap-4">
+          <StatCard icon={<Thermometer />} label="Feels Like" value={`${weather.feelsLike}°`} color="text-orange-400" isNight={isNight} />
+          <StatCard icon={<Droplets />} label="Humidity" value={`${weather.humidity}%`} color="text-sky-400" isNight={isNight} />
+          <StatCard icon={<Wind />} label="Wind" value={`${Math.round(weather.windSpeed * 3.6)}`} unit="km/h" color="text-emerald-400" isNight={isNight} />
+          <StatCard icon={<Eye />} label="Visibility" value={`${Math.round((weather.visibility ?? 10000) / 1000)}`} unit="km" color="text-purple-400" isNight={isNight} />
 
-          {/* AQI CARD */}
-          <div className={`col-span-2 p-8 rounded-[45px] flex items-center justify-between border shadow-xl ${
-            isNight ? "bg-white/5 border-white/10" : "bg-white/70 border-white"
-          }`}>
-            <div className="flex items-center gap-5">
-              <div className="p-4 bg-emerald-500/10 rounded-2xl text-emerald-500"><Waves size={24} /></div>
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-40">Air Quality</p>
-                <p className="text-2xl font-black">{aqiLabel}</p>
+          {/* AQI CARD - Height reduced */}
+          <motion.div 
+            whileHover={{ y: -3 }}
+            className={`col-span-2 p-6 rounded-[30px] border backdrop-blur-3xl shadow-lg flex flex-col justify-between transition-all duration-300
+            ${isNight ? "bg-white/[0.03] border-white/10 hover:border-emerald-500/30" : "bg-white/40 border-white/40 shadow-sm"}`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`p-2.5 rounded-xl ${isNight ? 'bg-emerald-500/10' : 'bg-emerald-400/20'} text-emerald-500`}>
+                  <Waves size={20} />
+                </div>
+                <div>
+                  <p className={`text-[9px] uppercase font-black tracking-widest ${textSecondary}`}>Air Quality</p>
+                  <p className={`text-lg font-black ${textPrimary}`}>{aqiLabel}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className={`text-3xl font-black opacity-10 ${textPrimary}`}>0{aqi}</span>
               </div>
             </div>
-            <div className="w-32 h-2 bg-black/5 rounded-full overflow-hidden">
-                <motion.div initial={{ width: 0 }} animate={{ width: "70%" }} transition={{ duration: 1.5 }} className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+
+            <div className="mt-4 relative h-2 bg-black/10 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${(aqi / 5) * 100}%` }}
+                transition={{ duration: 1.5, ease: "circOut" }}
+                className="h-full bg-gradient-to-r from-emerald-500 to-teal-400"
+              />
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </motion.div>
   );
 }
 
-function Badge({ icon, label, value, isNight }) {
+// Compact Sub-components
+function Badge({ icon, label, value, color, isNight }) {
   return (
-    <div className={`flex items-center gap-3 px-6 py-4 rounded-3xl border transition-all hover:translate-y-[-5px] ${isNight ? "bg-white/5 border-white/10 shadow-lg" : "bg-white border-white/60 shadow-md"}`}>
-      {icon}
+    <div className={`flex items-center gap-2.5 px-4 py-2 rounded-xl border backdrop-blur-xl transition-all
+      ${isNight ? "bg-white/5 border-white/10 text-white" : "bg-white/60 border-white/30 text-slate-900 shadow-sm"}`}
+    >
+      <span className={color}>{icon}</span>
       <div className="flex flex-col">
-        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{label}</span>
-        <span className="font-bold text-sm">{value}</span>
+        <span className="text-[8px] uppercase opacity-40 font-black tracking-wider">{label}</span>
+        <span className="font-extrabold text-xs">{value}</span>
       </div>
     </div>
   );
 }
 
-function StatCard({ icon, label, value, color, isNight }) {
+function StatCard({ icon, label, value, unit, color, isNight }) {
   return (
-    <motion.div 
-      // Movement fix: scale aur y offset bina jitter ke
-      whileHover={{ y: -10, scale: 1.02 }} 
-      // Smooth transition control
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-      className={`p-8 flex flex-col justify-between border rounded-[45px] shadow-lg relative overflow-hidden ${
-        isNight 
-          ? "bg-slate-900/60 border-white/5 text-white" 
-          : "bg-white/60 border-white text-slate-900 backdrop-blur-3xl"
-      }`}
-      // Tailwind transition-all ko yahan se hata diya hai conflict rokne ke liye
+    <motion.div
+      whileHover={{ y: -5, scale: 1.01 }}
+      className={`p-5 rounded-[30px] border backdrop-blur-3xl flex flex-col justify-between min-h-[145px] shadow-md transition-all
+      ${isNight 
+        ? "bg-white/[0.03] border-white/10 text-white hover:border-white/30" 
+        : "bg-white/40 border-white/40 text-slate-900 hover:bg-white/60 shadow-sm"}`}
     >
-      {/* Icon Container */}
-      <div className={`p-5 rounded-2xl w-fit mb-8 shadow-sm ${
-        isNight ? "bg-white/10" : "bg-slate-50/50"
-      } ${color}`}>
-        {React.cloneElement(icon, { size: 28, strokeWidth: 2.5 })}
+      <div className={`p-2.5 w-fit rounded-xl ${isNight ? 'bg-black/20' : 'bg-white/80 shadow-sm'} ${color}`}>
+        {React.cloneElement(icon, { size: 18, strokeWidth: 2.5 })}
       </div>
 
-      {/* Text Content */}
-      <div className="relative z-10">
-        <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1">
+      <div className="mt-3">
+        <p className={`text-[9px] opacity-40 uppercase font-black tracking-widest mb-0.5`}>
           {label}
         </p>
-        <p className="text-3xl font-black tracking-tighter">
-          {value}
+        <p className="text-2xl font-black tracking-tighter">
+          {value}<span className="text-[10px] ml-0.5 opacity-50 font-bold">{unit}</span>
         </p>
       </div>
     </motion.div>

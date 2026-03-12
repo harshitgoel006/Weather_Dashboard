@@ -1,27 +1,25 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, X, MapPin, Navigation } from "lucide-react";
+import { Star, X, Navigation } from "lucide-react";
 import { getFavorites, removeFavorite } from "../../utils/storage";
 
-function FavoriteCities({ onSelect }) {
+function FavoriteCities({ onSelect, isNight }) {
   const [favorites, setFavorites] = useState([]);
 
   const loadFavorites = () => {
-  const favs = getFavorites();
-  setFavorites([...new Set(favs)]);
-};
+    const favs = getFavorites();
+    setFavorites([...new Set(favs)]);
+  };
 
   useEffect(() => {
-  loadFavorites();
-
-  const handler = () => loadFavorites();
-  window.addEventListener("favoritesUpdated", handler);
-
-  return () => window.removeEventListener("favoritesUpdated", handler);
-}, []);
+    loadFavorites();
+    const handler = () => loadFavorites();
+    window.addEventListener("favoritesUpdated", handler);
+    return () => window.removeEventListener("favoritesUpdated", handler);
+  }, []);
 
   const handleDelete = (e, city) => {
-    e.stopPropagation(); // Taaki delete click karne par onSelect trigger na ho
+    e.stopPropagation();
     removeFavorite(city);
     loadFavorites();
   };
@@ -29,48 +27,65 @@ function FavoriteCities({ onSelect }) {
   if (favorites.length === 0) return null;
 
   return (
-    <section className="mt-2 mb-6">
-      {/* Label */}
-      <div className="flex items-center gap-2 mb-3 px-1 text-slate-400">
-        <Star size={14} className="fill-yellow-500 text-yellow-500" />
-        <span className="text-[11px] font-bold uppercase tracking-[0.2em]">Pinned Destinations</span>
+    <section className="mt-6 mb-10 px-1">
+      {/* --- LABEL: Match with "Instrumentation" header style --- */}
+      <div className="flex items-center gap-2.5 mb-5 ml-1">
+        <div className={`p-1.5 rounded-lg ${isNight ? 'bg-yellow-400/10' : 'bg-yellow-500/10'}`}>
+          <Star size={10} className="fill-yellow-400 text-yellow-400" />
+        </div>
+        <span className={`text-[9px] font-bold uppercase tracking-[0.4em] ${isNight ? 'text-white/40' : 'text-slate-500'}`}>
+          Pinned Locations
+        </span>
       </div>
 
-      <div className="flex gap-3 flex-wrap">
+      {/* --- PILLS --- */}
+      <div className="flex gap-4 flex-wrap">
         <AnimatePresence mode="popLayout">
           {favorites.map((city, index) => (
             <motion.div
               key={`${city}-${index}`}
               layout
-              initial={{ opacity: 0, scale: 0.8, x: -10 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
-              whileHover={{ y: -2 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              whileHover={{ y: -3 }}
               onClick={() => onSelect?.(city)}
-              className="group relative flex items-center gap-3 bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-md border border-white/10 pl-4 pr-2 py-2 rounded-2xl cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(0,0,0,0.1)] hover:shadow-[0_8px_25px_rgba(255,255,255,0.05)]"
+              // Match background with your "AQI" and "Feels Like" small cards
+              className={`group relative flex items-center gap-4 pl-4 pr-2 py-2.5 rounded-[22px] border transition-all duration-500 cursor-pointer ${
+                isNight 
+                  ? "bg-[#161b30]/40 backdrop-blur-md border-white/10 hover:border-blue-400/40 shadow-xl" 
+                  : "bg-white/40 border-slate-200 hover:bg-white/60 shadow-sm"
+              }`}
             >
-              {/* City Name & Icon */}
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors duration-300">
-                  <Navigation size={12} fill="currentColor" />
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-xl transition-all ${
+                  isNight ? 'bg-blue-400/10 text-blue-400' : 'bg-blue-500/10 text-blue-600'
+                }`}>
+                  <Navigation size={14} fill="currentColor" className="-rotate-45" />
                 </div>
-                <span className="text-sm font-semibold tracking-tight text-slate-200 group-hover:text-white transition-colors">
+                
+                {/* Font Fixed: Match main city display weight */}
+                <span className={`text-sm font-bold tracking-tight ${
+                  isNight ? 'text-white' : 'text-slate-900'
+                }`}>
                   {city}
                 </span>
               </div>
 
-              {/* Delete Button (Minimalist) */}
-              <motion.button
-                whileHover={{ scale: 1.2, rotate: 90 }}
-                whileTap={{ scale: 0.8 }}
+              {/* Remove Button */}
+              <button
                 onClick={(e) => handleDelete(e, city)}
-                className="p-1.5 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-all opacity-0 group-hover:opacity-100"
+                className={`p-1.5 rounded-lg transition-all ${
+                  isNight ? 'text-white/20 hover:text-red-400 hover:bg-red-400/10' : 'text-slate-300 hover:text-red-500 hover:bg-red-50'
+                }`}
               >
-                <X size={14} />
-              </motion.button>
+                <X size={14} strokeWidth={3} />
+              </button>
 
-              {/* Subtle White Glow on Hover */}
-              <div className="absolute inset-0 rounded-2xl border border-white/0 group-hover:border-white/20 transition-all pointer-events-none" />
+              {/* Hover Glow Effect */}
+              {isNight && (
+                <div className="absolute inset-0 rounded-[22px] bg-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              )}
             </motion.div>
           ))}
         </AnimatePresence>
